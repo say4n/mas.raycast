@@ -2,23 +2,30 @@ import { ActionPanel, Action, List } from "@raycast/api";
 import { useFetch, Response } from "@raycast/utils";
 import { useState } from "react";
 import { URLSearchParams } from "node:url";
+import { useDebounce } from "@uidotdev/usehooks";
 
-export default function Command() {
-  const [searchText, setSearchText] = useState("");
+const Command = () => {
+  const API = "https://itunes.apple.com/search?media=software&entity=software"
+  const [searchText, setSearchText] = useState("")
+  const debouncedSearchTerm = useDebounce(searchText, 1000);
+  
+  const queryUrl = debouncedSearchTerm.length === 0 ? "" : API + "&" + new URLSearchParams({ term: debouncedSearchTerm })
+  
   const { data, isLoading } = useFetch(
-    "https://api.npms.io/v2/search?" +
-      // send the search query to the API
-      new URLSearchParams({ q: searchText.length === 0 ? "@raycast/api" : searchText }),
+    queryUrl,
     {
+      execute: queryUrl !== "",
       parseResponse: parseFetchResponse,
-    }
-  );
+    },
+  )
+
+  console.log(searchText, queryUrl)
 
   return (
     <List
       isLoading={isLoading}
       onSearchTextChange={setSearchText}
-      searchBarPlaceholder="Search npm packages..."
+      searchBarPlaceholder="Search mac app store..."
       throttle
     >
       <List.Section title="Results" subtitle={data?.length + ""}>
@@ -35,16 +42,16 @@ function SearchListItem({ searchResult }: { searchResult: SearchResult }) {
     <List.Item
       title={searchResult.name}
       subtitle={searchResult.description}
-      accessories={[{ text: searchResult.username }]}
+      accessories={[{ text: searchResult.sellerName }]}
       actions={
         <ActionPanel>
           <ActionPanel.Section>
-            <Action.OpenInBrowser title="Open in Browser" url={searchResult.url} />
+            <Action.OpenInBrowser title="Open in App Store" url={searchResult.url} />
           </ActionPanel.Section>
           <ActionPanel.Section>
             <Action.CopyToClipboard
-              title="Copy Install Command"
-              content={`npm install ${searchResult.name}`}
+              title="Copy to Clipboard"
+              content={searchResult.url}
               shortcut={{ modifiers: ["cmd"], key: "." }}
             />
           </ActionPanel.Section>
@@ -59,26 +66,23 @@ async function parseFetchResponse(response: Response) {
   const json = (await response.json()) as
     | {
         results: {
-          package: {
-            name: string;
-            description?: string;
-            publisher?: { username: string };
-            links: { npm: string };
-          };
+          trackName: string;
+          description?: string;
+          sellerName?: string;
+          trackViewUrl: string;
         }[];
-      }
-    | { code: string; message: string };
+      };
 
-  if (!response.ok || "message" in json) {
-    throw new Error("message" in json ? json.message : response.statusText);
+  if (!response.ok) {
+    throw new Error(response.statusText);
   }
 
   return json.results.map((result) => {
     return {
-      name: result.package.name,
-      description: result.package.description,
-      username: result.package.publisher?.username,
-      url: result.package.links.npm,
+      name: result.trackName,
+      description: result.description,
+      sellerName: result.sellerName,
+      url: result.trackViewUrl,
     } as SearchResult;
   });
 }
@@ -86,6 +90,8 @@ async function parseFetchResponse(response: Response) {
 interface SearchResult {
   name: string;
   description?: string;
-  username?: string;
+  sellerName?: string;
   url: string;
 }
+
+export default Command

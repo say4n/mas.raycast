@@ -13,15 +13,16 @@
   "commands": [
     {
       "name": "index",
-      "title": "Search",
-      "subtitle": "Search for Apps",
+      "title": "Search App Store",
+      "subtitle": "Search for Applications on the Mac App Store",
       "description": "Search for Apps on the Mac App Store",
       "mode": "view"
     }
   ],
   "dependencies": {
     "@raycast/api": "^1.69.0",
-    "@raycast/utils": "^1.4.8"
+    "@raycast/utils": "^1.4.8",
+    "@uidotdev/usehooks": "^2.4.1"
   },
   "devDependencies": {
     "@raycast/eslint-config": "^1.0.6",
