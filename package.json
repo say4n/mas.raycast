@@ -3,7 +3,7 @@
   "name": "mac-app-store-search",
   "title": "Mac App Store Search",
   "description": "Search for apps in the Mac App Store from Raycast!",
-  "icon": "command-icon.png",
+  "icon": "icon.png",
   "author": "say4n",
   "categories": [
     "Productivity",
