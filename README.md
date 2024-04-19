@@ -1,2 +1,3 @@
-# mas.raycast
-mac app store search from the comfort of raycast
+# Mac App Store Search
+
+Search for apps in the Mac App Store from Raycast!
